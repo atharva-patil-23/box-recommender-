@@ -1,0 +1,39 @@
+[project]
+name = "box-recommender"
+version = "0.1.0"
+description = "Recommends the most suitable shipping box for an ecommerce order."
+requires-python = ">=3.13"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "DJ"]
+
+[tool.mypy]
+python_version = "3.13"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+strict = true
+warn_unreachable = true
+exclude = ['/migrations/', 'tests\.py$', '/tests/', 'conftest\.py$']
+
+[[tool.mypy.overrides]]
+module = ["environ.*"]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "--strict-markers --cov --cov-report=term-missing --cov-fail-under=90"
+
+[tool.coverage.run]
+source = ["selection", "inventory", "orders"]
+omit = ["*/migrations/*", "*/apps.py", "*/admin.py", "*/__init__.py", "*/tests.py", "*/tests/*"]
+
+[tool.coverage.report]
+show_missing = true

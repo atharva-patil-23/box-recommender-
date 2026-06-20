@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      # Same DATABASE_URL contract as local and Docker — Postgres only, no SQLite.
+      DATABASE_URL: postgres://app:app@localhost:5432/app
+      SECRET_KEY: ci-insecure-secret-key
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      # Sequential, fail-fast gates: ruff -> mypy -> migrations -> pytest.
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+      - name: Mypy
+        run: mypy .
+
+      - name: Migrations check (no model/migration drift)
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Pytest (with >=90% coverage gate)
+        run: pytest
