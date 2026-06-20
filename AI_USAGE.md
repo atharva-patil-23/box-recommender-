@@ -103,6 +103,6 @@ Recorded for honesty; all were caught and fixed before the relevant checkpoint:
 - **Architecture invariant:** `grep -r django selection/` returns nothing, proving
   the business core stays framework-free.
 - **CI:** the GitHub Actions workflow runs the same four gates against a Postgres
-  service container. Note: the workflow was validated structurally and by running
-  its exact commands locally; a green check on GitHub requires pushing the repo to
-  a remote (not done in this session).
+  service container. The repo was pushed to GitHub and the workflow runs **green**
+  on `main` (the badge at the top of the README links to the latest run). It was
+  also validated locally by running its exact commands against a Postgres service.
